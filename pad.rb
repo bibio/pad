@@ -5,7 +5,7 @@
 # 簡易パズドラ実行プログラム
 #--
 
-$: << File.expand_path(__FILE__) + "/lib"
+$: << File.expand_path(File.dirname(__FILE__)) + "/lib"
 require 'pad_runner'
 
 args = ARGV.clone
