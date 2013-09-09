@@ -100,14 +100,14 @@ class PadBoard
     str
   end
 
-  # 横方向に操作
+  # 横方向に評価
   def each_row(&blk)
     ROWS.times do |r|
       yield @board[r*COLUMNS, COLUMNS], r
     end
   end
 
-  # 縦方向に操作
+  # 縦方向に評価
   def each_column(&blk)
     COLUMNS.times do |c|
       columns = []
