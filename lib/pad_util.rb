@@ -1,8 +1,8 @@
 # coding: utf-8
 #
 module PadUtil
-  # ”z—ñ‚©‚ç min ˆÈã“¯‚¶’l‚ª‘±‚¢‚Ä‚¢‚½•”•ª‚Ìî•ñ‚ğ•Ô‚·
-  #   empty : minˆÈã“¯‚¶’l‚ª‘±‚¢‚Ä‚¢‚½•”•ª‚È‚µ
+  # é…åˆ—ã‹ã‚‰ min ä»¥ä¸ŠåŒã˜å€¤ãŒç¶šã„ã¦ã„ãŸéƒ¨åˆ†ã®æƒ…å ±ã‚’è¿”ã™
+  #   empty : minä»¥ä¸ŠåŒã˜å€¤ãŒç¶šã„ã¦ã„ãŸéƒ¨åˆ†ãªã—
   def sequence(min=3)
     pre = nil
     len = 0
@@ -31,7 +31,7 @@ module PadUtil
   end
 end
 
-# ArrayƒNƒ‰ƒX‚ğŠg’£
+# Arrayã‚¯ãƒ©ã‚¹ã‚’æ‹¡å¼µ
 class Array
   include PadUtil
 end

@@ -1,22 +1,22 @@
 # coding: utf-8
 #
-# PadBoard - �Q�[���Ǘ��N���X
-#    �Q�[���Ֆʂ����܂� 
+# PadBoard - ゲーム管理クラス
+#    ゲーム盤面をします 
 #
 require 'pad_util'
 
 class PadBoard
 
-  COLUMNS=6               # �������̐�
-  ROWS=5                  # �c�����̐�
-  ITEMS=[1,2,3,4,5,6]     # �z�u���鐔
-  MIN_LEN=3               # �q�b�g�Ƃ��鐔�̍ŏ��l
+  COLUMNS=6               # 横方向の数
+  ROWS=5                  # 縦方向の数
+  ITEMS=[1,2,3,4,5,6]     # 配置する数
+  MIN_LEN=3               # ヒットする数の最小値
 
 
-  ## �N���X���\�b�h�̒�`
+  ## クラスメソッドの定義
   class << self
 
-    # MIN_LEN�ȏ㓯���l�����΂Ȃ��悤�Ȕz���Ԃ�
+    # MIN_LEN以上同じ値が並ばないような配列を返す
     def no_sequence_board
       pad = nil
       while pad = PadBoard.new
@@ -27,19 +27,19 @@ class PadBoard
       pad
     end
 
-    # 2��=>1���̔z��ϊ�
+    # 2次=>1次の配列変換
     #   0-origin
     def pos(x,y)
       x + y*COLUMNS
     end
 
-    # ���`�̔z���z��̍��W�`���ɕϊ�����
+    # 線形の配列を配列の座標形式に変換する
     #   0-origin
     def coord(pos)
       [pos%COLUMNS,pos/COLUMNS]
     end
 
-    # �c�������͉��ɗאڂ���l��Ԃ�
+    # 縦もしくは横に隣接する値を返す
     def arounds(x,y)
       arounds = []
       if y > 0
@@ -57,22 +57,22 @@ class PadBoard
       arounds
     end
 
-    # arounds �ɂ��킦 �΂߂�ǉ�����
+    # arounds にくわえ 斜めを追加する
     def arounds_with_angle(x,y)
       arounds = arounds(x,y)
-      # ����
+      # 左上
       if (x > 0) && (y > 0)
         arounds.push [x-1,y-1]
       end
-      # �E��
+      # 右上
       if (x < COLUMNS-1) && (y > 0)
         arounds.push [x+1,y-1]
       end
-      # ����
+      # 左下
       if (x > 0) && (y < ROWS-1)
         arounds.push [x-1,y+1]
       end
-      # �E��
+      # 右下
       if (x < COLUMNS-1) && (y < ROWS-1)
         arounds.push [x+1,y+1]
       end
@@ -82,7 +82,7 @@ class PadBoard
 
   def initialize(board=nil)
     if board.nil?
-      # �z��Ƀ����_���Ȑ��l���Z�b�g����
+      # 配列にランダムな数値をセットする
       board = Array.new ROWS*COLUMNS
       board.size.times { |i| board[i] = rand(ITEMS.size)+1 } 
     end
@@ -91,7 +91,7 @@ class PadBoard
 
   attr_accessor :board
 
-  # �e�[�u���`���ŕ\������
+  # テーブル形式で表示する
   def to_s
     str = ""
     each_row do |row|
@@ -100,14 +100,14 @@ class PadBoard
     str
   end
 
-  # �������ɑ���
+  # 横方向に操作
   def each_row(&blk)
     ROWS.times do |r|
       yield @board[r*COLUMNS, COLUMNS], r
     end
   end
 
-  # �c�����ɑ���
+  # 縦方向に操作
   def each_column(&blk)
     COLUMNS.times do |c|
       columns = []
@@ -118,18 +118,18 @@ class PadBoard
     end
   end
 
-  # MIN_LEN�ȏ㓯����������ł��邩���ׂ�
+  # MIN_LEN以上同じ数が並んでいるか調べる
   def sequence
 
     matched = []
-    # �������Ń}�b�`�������
+    # 横方向でマッチするもの
     each_row do |row,r|
         val = row.sequence(MIN_LEN)
         val.each { |v| v.merge!(orient: :h, coord: [v[:pos], r]) }
         matched << val unless val.empty?
     end
 
-    # �c�����Ń}�b�`�������
+    # 縦方向でマッチするもの
     each_column do |cols,c|
         val = cols.sequence(MIN_LEN)
         val.each { |v| v.merge!(orient: :v, coord: [c, v[:pos]]) }
@@ -139,20 +139,20 @@ class PadBoard
     return matched.flatten
   end
 
-  # MIN_LEN�ȏ㓯����������ł��邩�𔻒肷��
+  # MIN_LEN以上同じ数が並んでいるかを判定する
   def is_sequence?
     return !sequence.empty?
   end
 
-  # ����ւ��̑g�ݍ��킹�����߂�
-  #   around_func �͗אڂ���l�̃y�A���擾���郁�\�b�h
-  #   �ȉ��̂����ꂩ���w�肷��
-  #       :arounds = �c�����E�������ŗאڂ������
-  #       :arounds_with_angle = :arounds �Ɏ΂ߕ��������킦������
+  # 入れ替えの組み合わせを求める
+  #   around_func は隣接する値のペアを取得するメソッド
+  #   以下のいずれかを指定する
+  #       :arounds = 縦方向・横方向で隣接するもの
+  #       :arounds_with_angle = :arounds に斜め方向もくわえたもの
   def sequence_combination_by_swap(around_func=:arounds)
 
-    # �אڂ���l�̃y�A�̑g�ݍ��킹���擾����
-    #   (board�̃C���f�b�N�X�ɕϊ����Ă���)
+    # 隣接する値のペアの組み合わせを取得する
+    #   (boardのインデックスに変換している)
     combinations = []
     COLUMNS.times do |x|
       ROWS.times do |y|
@@ -161,16 +161,16 @@ class PadBoard
       end
     end
 
-    # �P�g�̓���ւ������{���A�����l�����ԓ���ւ��̑g�ݍ��킹���擾����
+    # １組の入れ替えを実施し、同じ値が並ぶ入れ替えの組み合わせを取得する
     seq_combinations = []
     combinations.uniq.each do |pos1,pos2|
       newboard = PadBoard.new(@board)
 
-      # ����ւ����{
+      # 入れ替え実施
       newboard.board[pos2] = @board[pos1]
       newboard.board[pos1] = @board[pos2]
 
-      # ����ւ����MIN_LEN�ȏ㓯���l������ł��邩
+      # 入れ替え後にMIN_LEN以上同じ値が並んでいるか
       if newboard.is_sequence?
         coord1 = PadBoard.coord(pos1) 
         coord2 = PadBoard.coord(pos2) 

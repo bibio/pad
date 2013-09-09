@@ -1,4 +1,4 @@
-# coding: UTF-8
+# coding: utf-8
 #
 # PadRunner 
 #　　引数の操作やコマンドラインインタフェース部分を定義しています
